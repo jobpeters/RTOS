@@ -1,46 +1,48 @@
 #include <iostream>
 #include <pthread.h>
 #include <ctime>
+#include <chrono>
+#include <thread>
 
 pthread_t tid1, tid2;
 pthread_attr_t tattr;
 
 void *thread1(void *arg) {
     std::string threadnaam = "thread1";
-    int periodenummer = 1;
+    int periodenummer = 0;
     struct timespec deadline;
-    long period=100000L;
-    clock_gettime(CLOCK_MONOTONIC, &deadline);
-    std::time_t t = std::time(0);
+    const auto timeWindow = std::chrono::milliseconds(500);
     do {
-
-        std::cout << "naam: " << threadnaam << ", Periodenummer: " << std::to_string(periodenummer) << ", timestamp: " << t << std::endl << std::flush;
-        deadline.tv_nsec=deadline.tv_nsec+period;
-        if (deadline.tv_nsec>=1000000000L) {
-            deadline.tv_nsec-=1000000000L;
-            ++deadline.tv_sec;
-        }
-        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+        auto start = std::chrono::steady_clock::now();
+        std::cout << "naam: " << threadnaam << ", Periodenummer: " << std::to_string(periodenummer) << std::endl << std::flush;
         periodenummer++;
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed = end - start;
+
+        auto timeToWait = timeWindow - elapsed;
+        if(timeToWait > std::chrono::milliseconds::zero())
+        {
+            std::this_thread::sleep_for(timeToWait);
+        }
     }while(1);
 }
 void *thread2(void *arg) {
     std::string threadnaam = "thread2";
-    int periodenummer = 1;
+    int periodenummer = 0;
     struct timespec deadline;
-    long period=100000L;
-    clock_gettime(CLOCK_MONOTONIC, &deadline);
-    std::time_t t = std::time(0);
+    const auto timeWindow = std::chrono::milliseconds(1300);
     do {
-
-        std::cout << ", naam: " << threadnaam << ", Periodenummer: " << std::to_string(periodenummer) << ", timestamp: " << t << std::endl << std::flush;
-        deadline.tv_nsec=deadline.tv_nsec+period;
-        if (deadline.tv_nsec>=1000000000L) {
-            deadline.tv_nsec-=1000000000L;
-            ++deadline.tv_sec;
-        }
-        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+        auto start = std::chrono::steady_clock::now();
+        std::cout << "naam: " << threadnaam << ", Periodenummer: " << std::to_string(periodenummer) << std::endl << std::flush;
         periodenummer++;
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed = end - start;
+
+        auto timeToWait = timeWindow - elapsed;
+        if(timeToWait > std::chrono::milliseconds::zero())
+        {
+            std::this_thread::sleep_for(timeToWait);
+        }
     }while(1);
 }
 int main() {
